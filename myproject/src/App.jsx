@@ -1,13 +1,16 @@
 import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import LoginPage from './LoginPage'
+import StudentDashboard from './StudentDashboard'
+import TeacherDashboard from './TeacherDashboard'
 
-const App = () => {
+function App() {
   return (
-    <div>
-      <h1 className='bg-red-500'>
-        Lorem ipsum dolor sit amet consectetur.
-
-      </h1>
-    </div>
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/student-dashboard" element={<StudentDashboard />} />
+      <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+    </Routes>
   )
 }
 
