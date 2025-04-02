@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Make sure to install axios: npm install axios
+import axios from 'axios';
 
 function LoginPage() {
   const [isStudent, setIsStudent] = useState(true);
@@ -13,6 +13,27 @@ function LoginPage() {
     event.preventDefault();
     setError(''); // Reset error message
 
+    // Teacher login with hardcoded credentials
+    if (!isStudent) {
+      if (username === 'teacher' && password === 'teacher') {
+        // Store minimal teacher info in localStorage for consistency
+        const teacherData = {
+          username: 'teacher',
+          roles: ['ROLE_TEACHER'],
+          accessToken: 'teacher-token' // This is just for consistency, not a real token
+        };
+        localStorage.setItem('user', JSON.stringify(teacherData));
+        
+        // Navigate to teacher dashboard
+        navigate('/teacher-dashboard');
+        return;
+      } else {
+        setError('Invalid teacher credentials. Use username: "teacher" and password: "teacher"');
+        return;
+      }
+    }
+
+    // Student login via API
     try {
       const response = await axios.post('https://erp-be-gnrp.onrender.com/api/auth/signin', {
         username,
@@ -20,34 +41,26 @@ function LoginPage() {
       });
 
       // Successful login
-      console.log('Login successful', response.data);
+      console.log('Student login successful', response.data);
       
       // Store the token in localStorage
       localStorage.setItem('user', JSON.stringify(response.data));
       
-      // Navigate based on role (you might want to adjust this logic)
-      if (response.data.roles.includes('ROLE_USER')) {
-        navigate('/student-dashboard');
-      } else {
-        navigate('/dashboard');
-      }
+      // Navigate to student dashboard
+      navigate('/student-dashboard');
+      
     } catch (err) {
       // Handle login error
-      console.error('Login failed', err);
-      setError('Invalid credentials. Please try again.');
+      console.error('Student login failed', err);
       
-      // Optional: more detailed error handling
+      // Detailed error handling
       if (err.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         console.error('Error response', err.response.data);
         setError(err.response.data.message || 'Login failed');
       } else if (err.request) {
-        // The request was made but no response was received
         console.error('No response received', err.request);
         setError('No response from server. Please check your connection.');
       } else {
-        // Something happened in setting up the request that triggered an Error
         console.error('Error', err.message);
         setError('An unexpected error occurred');
       }
@@ -88,6 +101,12 @@ function LoginPage() {
           <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
             {isStudent ? 'Student Login' : 'Teacher Login'}
           </h2>
+          
+          {!isStudent && (
+            <div className="mb-4 text-gray-500 text-center text-sm">
+              Use username: "teacher" and password: "teacher"
+            </div>
+          )}
           
           {error && (
             <div className="mb-4 text-red-600 text-center">

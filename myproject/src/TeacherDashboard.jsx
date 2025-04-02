@@ -1,152 +1,113 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; 
+import {
+  Menu, X, Users, Home, Book, FileText, LogOut
+} from 'lucide-react';
+
+// Import the Teacher component
+import Teacher from './Teacher';  
+import TAttendence from './TAttendence';
+
+const useResponsive = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return isMobile;
+};
 
 const TeacherDashboard = () => {
-  const [students, setStudents] = useState([
-    { id: 1, name: 'Emma Johnson', standard:"12th", grade: 'A', attendance: 95, behavior: 'Excellent' },
-    { id: 2, name: 'Liam Smith',  standard:"12th", grade: 'B+', attendance: 88, behavior: 'Good' },
-    { id: 3, name: 'Olivia Williams', standard:"12th", grade: 'A-', attendance: 92, behavior: 'Very Good' }
-  ]);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isMobile = useResponsive();
+  const [activeSection, setActiveSection] = useState('Teacher - Make the World Better Place');
+  
+  const sidebarMenuItems = [
+    { icon: Home, label: 'Teacher', section: 'Teacher - Make the World Better Place' },
+    { icon: Book, label: 'Attendance', section: 'Attendance' },
+    { icon: Book, label: 'Classroom', section: 'Classroom' },
+    { icon: Book, label: 'Student Info', section: 'Student Info' },
+    { icon: FileText, label: 'Examination', section: 'Examination' }
+  ];
+  
+  const handleLogout = () => {
+    alert('Logging out...');
+  };
 
-  // State for new student form
-  const [newStudent, setNewStudent] = useState({
-    name: '',
-    standard :'',
-    grade: '',
-    attendance: '',
-    behavior: ''
-  });
-
-  // Function to handle input changes in new student form
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewStudent(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };    
-
-  // Function to add a new student
-  const addStudent = (e) => {
-    e.preventDefault();
-    
-    // Validate input
-    if (!newStudent.name || !newStudent.standard || !newStudent.grade  ) {
-      alert('Please enter at least name and grade');
-      return;
+  // Function to render the appropriate component based on activeSection
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'Teacher - Make the World Better Place':
+        return <Teacher />;
+      case 'Attendance':
+        return <TAttendence/>;
+      case 'Classroom':
+        return <div className="p-6">Classroom content goes here</div>;
+      case 'Student Info':
+        return <div className="p-6">Student Info content goes here</div>;
+      case 'Examination':
+        return <div className="p-6">Examination content goes here</div>;
+      default:
+        return <div className="p-6">Select a section from the sidebar</div>;
     }
-
-    // Create new student object with a unique ID
-    const studentToAdd = {
-      ...newStudent,
-      id: students.length > 0 ? Math.max(...students.map(s => s.id)) + 1 : 1,
-      attendance: newStudent.attendance || 0,
-      behavior: newStudent.behavior || 'Not Rated'
-    };
-
-    // Add student to the list
-    setStudents([...students, studentToAdd]);
-
-    // Reset the form
-    setNewStudent({
-      name: '',
-      standard: '',
-      grade: '',
-      attendance: '',
-      behavior: ''
-    });
   };
-
-  // Function to remove a student
-  const removeStudent = (id) => {
-    setStudents(students.filter(student => student.id !== id));
-  };
-
-  const renderStudentList = () => (
-    <div className="bg-white p-4 rounded-lg shadow">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold flex items-center">
-          👥 Student List
-        </h2>
-        
-        {/* Add Student Form */}
-        <form onSubmit={addStudent} className="flex space-x-2">
-          <input
-            type="text"
-            name="name"
-            placeholder="Student Name"
-            value={newStudent.name}
-            onChange={handleInputChange}
-            className="border p-1 rounded"
-          />
-          <input
-            type="text"
-            name="standard"
-            placeholder="standard"
-            value={newStudent.standard}
-            onChange={handleInputChange}
-            className="border p-1 rounded w-20"
-          />
-          <input
-            type="text"
-            name="grade"
-            placeholder="Grade"
-            value={newStudent.grade}
-            onChange={handleInputChange}
-            className="border p-1 rounded w-20"
-          />
-          <button 
-            type="submit" 
-            className="bg-green-500 text-white p-1 rounded"
-          >
-            + Add Student
-          </button>
-        </form>
-      </div>
-
-      <table className="w-full">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2 text-left">Name</th>
-            <th className="p-4 text-left">standard</th>
-
-            <th className="p-2 text-center">Grade</th>
-            <th className="p-2 text-center">Attendance</th>
-            <th className="p-2 text-center">Behavior</th>
-            <th className="p-2 text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {students.map(student => (
-            <tr key={student.id} className="border-b hover:bg-gray-50">
-              <td className="p-2">{student.name}</td>
-              <td className="p-2">{student.standard}</td>
-              <td className="p-2 text-center">{student.grade}</td>
-              <td className="p-2 text-center">{student.attendance}%</td>
-              <td className="p-2 text-center">{student.behavior}</td>
-              <td className="p-2 text-center">
-                <button 
-                  onClick={() => removeStudent(student.id)}
-                  className="bg-red-500 text-white p-1 rounded text-xs"
-                >
-                  Remove
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-
+  
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="container mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Teacher Dashboard</h1>
-        
-        {/* Assuming previous navigation remains the same */}
-        <div className="mt-6">
-          {renderStudentList()}
+    <div className="min-h-screen bg-gray-100 flex">
+      {isMenuOpen && (
+        <div className="sidebar fixed inset-y-0 left-0 w-64 bg-blue-900 text-white z-50 shadow-lg transition-transform duration-300 ease-in-out">
+          <div className="p-5">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold flex items-center">
+                <Users className="mr-2" /> Teacher Dashboard
+              </h2>
+              <button onClick={() => setIsMenuOpen(false)} className="hover:text-gray-300">
+                <X size={24} />
+              </button>
+            </div>
+            <nav>
+              {sidebarMenuItems.map((item, index) => (
+                <div
+                  key={index}
+                  className={`py-2 px-3 flex items-center space-x-2 ${activeSection === item.section ? 'bg-blue-700 text-white' : 'hover:bg-blue-800 text-gray-300'} rounded transition-colors cursor-pointer`}
+                  onClick={() => {
+                    setActiveSection(item.section);
+                    if (isMobile) setIsMenuOpen(false);
+                  }}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+              <div onClick={handleLogout} className="mt-4 py-2 px-3 flex items-center space-x-2 hover:bg-red-700 text-red-300 hover:text-white rounded transition-colors cursor-pointer">
+                <LogOut size={20} />
+                <span>Logout</span>
+              </div>
+            </nav>
+          </div>
         </div>
+      )}
+      
+      <div className={`flex-1 flex flex-col ${isMenuOpen && !isMobile ? 'ml-64' : ''} transition-all duration-300`}>
+        <header className="bg-white shadow-md sticky top-0 z-40">
+          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div className="flex items-center space-x-4">
+              <button className="menu-toggle text-gray-600 hover:text-blue-600" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+              <h1 className="text-xl font-bold text-gray-800">{activeSection}</h1>
+            </div>
+          </div>
+        </header>
+        
+        {/* Content Area */}
+        <main className="flex-1 p-4">
+          {renderSection()}
+        </main>
       </div>
     </div>
   );
